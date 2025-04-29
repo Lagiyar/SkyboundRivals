@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour
 
     void CheckGround()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, 0.2f, groundLayer);
+        isGrounded = Physics.CheckSphere(groundCheck.position, 0.33f, groundLayer);
         if (isGrounded && inJump)
         {
             inJump = false;
@@ -151,4 +151,14 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Physics.gravity * gravityMultiplier, ForceMode.Acceleration);
         }
     }
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Platform"))
+        {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+        }
+    }
+
+
+
 }
