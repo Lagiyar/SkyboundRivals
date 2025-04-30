@@ -28,10 +28,13 @@ public class PlayerController : MonoBehaviour
     private bool isChargingJump;
     private float currentJumpForce;
     private Vector3 lockedMoveDirection;
+    private Vector3 savedPosition;
     private bool inJump;
 
     void Start()
     {
+
+
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -46,7 +49,23 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        CheckGround();
+
+        // Save position when you press T
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            savedPosition = transform.position;
+            Debug.Log("Position saved: " + savedPosition);
+        }
+
+        // Teleport back to saved position when you press R
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            transform.position = savedPosition;
+            Debug.Log("Teleported to saved position");
+        }
+    
+
+    CheckGround();
         HandleJumpCharge();
         HandleMovement();
     }
