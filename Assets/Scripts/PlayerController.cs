@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     public Transform cameraTransform;
 
     [Header("Effects")]
-    public ParticleSystem jumpChargeParticles;
+    public ParticleSystem jumpParticles;
     public AudioSource jumpChargeSound;
     public AudioSource jumpReleaseSound;
 
@@ -31,10 +31,10 @@ public class PlayerController : MonoBehaviour
     private Vector3 savedPosition;
     private bool inJump;
 
+    public float groundCheckRadius = 0.33f;
+
     void Start()
     {
-
-
         rb = GetComponent<Rigidbody>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
@@ -49,23 +49,19 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-
-        // Save position when you press T
         if (Input.GetKeyDown(KeyCode.T))
         {
             savedPosition = transform.position;
             Debug.Log("Position saved: " + savedPosition);
         }
 
-        // Teleport back to saved position when you press R
         if (Input.GetKeyDown(KeyCode.R))
         {
             transform.position = savedPosition;
             Debug.Log("Teleported to saved position");
         }
-    
 
-    CheckGround();
+        CheckGround();
         HandleJumpCharge();
         HandleMovement();
     }
@@ -78,7 +74,7 @@ public class PlayerController : MonoBehaviour
 
     void CheckGround()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, 0.33f, groundLayer);
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundCheckRadius, groundLayer);
         if (isGrounded && inJump)
         {
             inJump = false;
@@ -94,12 +90,10 @@ public class PlayerController : MonoBehaviour
             {
                 isChargingJump = true;
                 currentJumpForce = 0f;
-
-                // Stop horizontal movement but keep vertical (if falling slightly)
                 rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
 
-                if (jumpChargeParticles) jumpChargeParticles.Play();
                 if (jumpChargeSound) jumpChargeSound.Play();
+                // Removed jumpParticles.Play() from here
             }
 
             if (Input.GetButton("Jump") && isChargingJump)
@@ -124,7 +118,8 @@ public class PlayerController : MonoBehaviour
                 isChargingJump = false;
                 inJump = true;
 
-                if (jumpChargeParticles) jumpChargeParticles.Stop();
+                // Moved the particles to play here on release
+                if (jumpParticles) jumpParticles.Play();
                 if (jumpReleaseSound) jumpReleaseSound.Play();
             }
         }
@@ -142,14 +137,16 @@ public class PlayerController : MonoBehaviour
 
             Vector3 moveDirection = (camForward * inputZ + camRight * inputX).normalized;
 
-            Vector3 targetVelocity = moveDirection * moveSpeed;
-            targetVelocity.y = rb.linearVelocity.y;
+            if (moveDirection != Vector3.zero)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+            }
 
-            rb.linearVelocity = targetVelocity;
+            rb.linearVelocity = new Vector3(moveDirection.x * moveSpeed, rb.linearVelocity.y, moveDirection.z * moveSpeed);
         }
         else if (isGrounded && (isChargingJump || inJump))
         {
-            // Prevent movement while charging or in jump
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
         }
     }
@@ -158,7 +155,6 @@ public class PlayerController : MonoBehaviour
     {
         if (inJump)
         {
-            // No air control
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
         }
     }
@@ -170,6 +166,7 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Physics.gravity * gravityMultiplier, ForceMode.Acceleration);
         }
     }
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Platform"))
@@ -177,7 +174,4 @@ public class PlayerController : MonoBehaviour
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
         }
     }
-
-
-
 }

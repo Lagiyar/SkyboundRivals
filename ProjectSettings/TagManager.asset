@@ -15,10 +15,10 @@ TagManager:
   - UI
   - Ground
   - WallObstacles
-  - 
-  - 
-  - 
-  - 
+  - SpiderBody
+  - SpiderHead
+  - SpiderFoot
+  - SpiderLeg
   - 
   - 
   - 
