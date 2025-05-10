@@ -33,7 +33,7 @@ This project is **not affiliated with or endorsed by Jump King or its creators**
 
 ## ✍️ Author
 
-Created by [Your Name or GitHub Handle]
+Created by @Lagiyar
 
 ---
 
